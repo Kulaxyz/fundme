@@ -40,6 +40,11 @@ module.exports = {
     noColors: true,
     coinmarketcap: process.env.COINMARKETCAP_KEY
   },
+  etherscan: {
+    apiKey: {
+      rinkeby: process.env.RINKEBY_ETHERSCAN_API_KEY
+    }
+  },
   namedAccounts: {
     deployer: {
         default: 0

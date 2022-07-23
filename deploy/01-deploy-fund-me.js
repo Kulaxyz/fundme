@@ -14,7 +14,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
         priceFeed = networks[chanId].priceFeedAddress
     }
 
-    await deployments.deploy("FundMe", {
+    const fundMe = await deployments.deploy("FundMe", {
         from: deployer,
         args: [priceFeed],
         log: true,
@@ -23,7 +23,7 @@ module.exports = async ({ deployments, getNamedAccounts }) => {
     })
 
     if (!localChains.includes(network.name)) {
-        await verify(deployments.get("FundMe").address, [])
+        await verify(fundMe.address, [priceFeed])
     }
 }
 

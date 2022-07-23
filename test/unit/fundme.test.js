@@ -38,7 +38,7 @@ describe("FundMe", () => {
 
     describe("withdraw", () => {
         beforeEach(async () => {
-            await fundMe.fund({ value: sendValue })
+            await fundMe.fund({ value: amount })
         })
 
         it("Only allows the owner to withdraw", async function () {

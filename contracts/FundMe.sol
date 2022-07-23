@@ -12,11 +12,11 @@ contract FundMe {
 
     address private immutable i_owner;
     address[] public s_funders;
-    mapping(address => uint256) public addressToAmount;
+    mapping(address => uint256) public s_addressToAmount;
     mapping(address => string) public s_addressToComment;
     uint public constant minAmount = 1 * 1e15;
     uint public constant minAmountUsd = 50;
-    uint256 public constant highestValue = 0;
+    uint256 public highestValue = 0;
 
     AggregatorV3Interface private priceFeed;
 
@@ -28,11 +28,11 @@ contract FundMe {
 
     function fund() public payable {
         require(msg.value.toUsd(priceFeed) >= minAmountUsd, "FundMe__NotEnoughAmount");
-        funders.push(msg.sender);
-        addressToAmount[msg.sender] = addressToAmount[msg.sender] + msg.value;
-        // highestValue = max(highestValue, addressToAmount[msg.sender])
-        if(addressToAmount[msg.sender] > highestValue) {
-            highestValue = addressToAmount[msg.sender];
+        s_funders.push(msg.sender);
+        s_addressToAmount[msg.sender] = s_addressToAmount[msg.sender] + msg.value;
+        // highestValue = max(highestValue, s_addressToAmount[msg.sender])
+        if(s_addressToAmount[msg.sender] > highestValue) {
+            highestValue = s_addressToAmount[msg.sender];
         }
         s_addressToComment[msg.sender] = "_comment";
     }
@@ -44,9 +44,9 @@ contract FundMe {
     function withdraw() public onlyOwner {
         uint256 len = s_funders.length;
         for(uint256 i = 0; i < len; i++) {
-            s_addressToAmount[funders[i]] = 0;
+            s_addressToAmount[s_funders[i]] = 0;
         }
-        funders = new address[](0);
+        s_funders = new address[](0);
         (bool success,) = payable(msg.sender).call{value: address(this).balance}("");
         require(success, "Fail");
     }
