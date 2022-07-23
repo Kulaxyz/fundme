@@ -6,6 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 error FundMe__NotOwner();
 error FundMe__NotEnoughAmount();
+error FundMe__WithdrawFail();
 
 contract FundMe {
     using PriceConverter for uint256;
@@ -26,15 +27,15 @@ contract FundMe {
     }
 
 
-    function fund() public payable {
-        require(msg.value.toUsd(priceFeed) >= minAmountUsd, "FundMe__NotEnoughAmount");
+    function fund(string memory _comment) public payable {
+        if(msg.value.toUsd(priceFeed) < minAmountUsd) revert FundMe__NotEnoughAmount();
         s_funders.push(msg.sender);
         s_addressToAmount[msg.sender] = s_addressToAmount[msg.sender] + msg.value;
         // highestValue = max(highestValue, s_addressToAmount[msg.sender])
         if(s_addressToAmount[msg.sender] > highestValue) {
             highestValue = s_addressToAmount[msg.sender];
         }
-        s_addressToComment[msg.sender] = "_comment";
+        s_addressToComment[msg.sender] = _comment;
     }
 
     function getTopFund() public view returns(uint) {
@@ -48,7 +49,7 @@ contract FundMe {
         }
         s_funders = new address[](0);
         (bool success,) = payable(msg.sender).call{value: address(this).balance}("");
-        require(success, "Fail");
+        if(!success) revert FundMe__WithdrawFail();
     }
 
     function getPriceFeed() public view returns(AggregatorV3Interface) {
@@ -56,7 +57,7 @@ contract FundMe {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == i_owner, "FundMe__NotOwner");
+        if(msg.sender != i_owner) revert FundMe__NotOwner();
         _;
     }
 }

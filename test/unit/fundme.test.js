@@ -26,19 +26,20 @@ describe("FundMe", () => {
 
     describe("fund", () => {
         it('should fail when not enough amount', async function () {
-            await expect(fundMe.fund()).to.be.revertedWith("FundMe__NotEnoughAmount")
+            await expect(fundMe.fund("test comment")).to.be.revertedWithCustomError(fundMe,`FundMe__NotEnoughAmount`)
         });
 
         it("should fund", async function () {
-            await fundMe.fund({value: amount})
+            await fundMe.fund("test comment", {value: amount})
             const response = await fundMe.provider.getBalance(fundMe.address)
             assert.equal(response.toString(), amount.toString())
+            assert.equal(await fundMe.s_addressToComment(deployer), "test comment")
         })
     })
 
     describe("withdraw", () => {
         beforeEach(async () => {
-            await fundMe.fund({ value: amount })
+            await fundMe.fund("test comment", {value: amount})
         })
 
         it("Only allows the owner to withdraw", async function () {
@@ -48,11 +49,11 @@ describe("FundMe", () => {
             )
             await expect(
                 fundMeConnectedContract.withdraw()
-            ).to.be.revertedWith("FundMe__NotOwner")
+            ).to.be.revertedWithCustomError(fundMe, `FundMe__NotOwner`)
         })
 
         it("Withdraws the funds", async function () {
-            await fundMe.fund({value: amount})
+            await fundMe.fund("test comment", {value: amount})
             await fundMe.withdraw()
             const response = await fundMe.provider.getBalance(fundMe.address)
             assert.equal(response.toString(), "0")
